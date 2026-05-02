@@ -1,6 +1,7 @@
 package javaapplication7;
 
 import javax.swing.JOptionPane;
+import java.sql.*;
 
 public class RegisterForm extends javax.swing.JFrame {
 
@@ -8,79 +9,68 @@ public class RegisterForm extends javax.swing.JFrame {
         initComponents();
     }
 
-    @SuppressWarnings("unchecked")
     private void initComponents() {
-
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
-
         jLabel2 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-
         jname = new javax.swing.JTextField();
         email = new javax.swing.JTextField();
         password = new javax.swing.JPasswordField();
-
         SignUpBtn = new javax.swing.JButton();
         loginBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Register");
 
-        // MAIN PANEL
         jPanel1.setBackground(new java.awt.Color(255, 102, 0));
 
-        // HEADER
         jPanel2.setBackground(new java.awt.Color(153, 153, 153));
         jLabel1.setFont(new java.awt.Font("Times New Roman", 1, 20));
         jLabel1.setText("REGISTER FORM");
         jPanel2.add(jLabel1);
 
-        // FORM PANEL
         jPanel4.setBackground(new java.awt.Color(204, 204, 204));
 
         jLabel2.setText("Full Name:");
-        jLabel5.setText("Email:");
+        jLabel5.setText("Username/Email:");
         jLabel6.setText("Password:");
         jLabel7.setText("Already have an account?");
 
         SignUpBtn.setText("SIGN UP");
         loginBtn.setText("LOGIN");
 
-        // BUTTON ACTIONS
         SignUpBtn.addActionListener(evt -> SignUpBtnActionPerformed(evt));
         loginBtn.addActionListener(evt -> loginBtnActionPerformed(evt));
 
-        // LAYOUT
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(40)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(jLabel5)
-                    .addComponent(jLabel6))
-                .addGap(20)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jname, 200, 200, 200)
-                    .addComponent(email, 200, 200, 200)
-                    .addComponent(password, 200, 200, 200)
-                    .addComponent(SignUpBtn))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel5)
+                            .addComponent(jLabel6))
+                        .addGap(20)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jname, 200, 200, 200)
+                            .addComponent(email)
+                            .addComponent(password)
+                            .addComponent(SignUpBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(loginBtn)))
                 .addContainerGap(40, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(40)
-                .addComponent(jLabel7)
-                .addGap(20)
-                .addComponent(loginBtn)
-                .addContainerGap())
         );
-
         layout.setVerticalGroup(
             layout.createSequentialGroup()
                 .addGap(30)
@@ -96,7 +86,7 @@ public class RegisterForm extends javax.swing.JFrame {
                     .addComponent(jLabel6)
                     .addComponent(password, 30, 30, 30))
                 .addGap(25)
-                .addComponent(SignUpBtn)
+                .addComponent(SignUpBtn, 35, 35, 35)
                 .addGap(30)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7)
@@ -104,29 +94,24 @@ public class RegisterForm extends javax.swing.JFrame {
                 .addGap(30)
         );
 
-        // ADD PANELS
         javax.swing.GroupLayout mainLayout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(mainLayout);
-
         mainLayout.setHorizontalGroup(
             mainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-
         mainLayout.setVerticalGroup(
             mainLayout.createSequentialGroup()
                 .addComponent(jPanel2, 60, 60, 60)
-                .addComponent(jPanel4)
+                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         getContentPane().add(jPanel1);
-
         pack();
         setLocationRelativeTo(null);
     }
 
-    // SIGN UP BUTTON FUNCTION
     private void SignUpBtnActionPerformed(java.awt.event.ActionEvent evt) {
         String name = jname.getText();
         String userEmail = email.getText();
@@ -134,21 +119,25 @@ public class RegisterForm extends javax.swing.JFrame {
 
         if (name.isEmpty() || userEmail.isEmpty() || pass.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill all fields!");
-        } else {
-            JOptionPane.showMessageDialog(this, "Registration Successful!");
+            return;
+        }
 
-            // CLEAR FIELDS
-            jname.setText("");
-            email.setText("");
-            password.setText("");
+        try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/vismanosddl", "root", "")) {
+            String sql = "INSERT INTO users (username, password) VALUES (?, ?)";
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, userEmail);
+            pst.setString(2, pass);
 
-            // 👉 AUTO GO BACK TO LOGIN
+            pst.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Registration Successful! Please login.");
+            
             new LoginForm().setVisible(true);
             this.dispose();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 
-    // LOGIN BUTTON FUNCTION
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {
         new LoginForm().setVisible(true);
         this.dispose();
@@ -158,20 +147,9 @@ public class RegisterForm extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(() -> new RegisterForm().setVisible(true));
     }
 
-    // VARIABLES
-    private javax.swing.JButton SignUpBtn;
-    private javax.swing.JButton loginBtn;
-    private javax.swing.JTextField email;
-    private javax.swing.JTextField jname;
+    private javax.swing.JButton SignUpBtn, loginBtn;
+    private javax.swing.JTextField email, jname;
     private javax.swing.JPasswordField password;
-
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JLabel jLabel1, jLabel2, jLabel5, jLabel6, jLabel7;
+    private javax.swing.JPanel jPanel1, jPanel2, jPanel4;
 }
